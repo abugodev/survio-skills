@@ -1,0 +1,15 @@
+{
+  "name": "survio-skills",
+  "owner": { "name": "Abugo", "email": "boris@reservio.com" },
+  "metadata": {
+    "description": "Agent skills for Survio: analyze survey results with reproducible numbers and anonymity guardrails"
+  },
+  "plugins": [
+    {
+      "name": "survio-insights",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "Analyze Survio survey results like a senior survey analyst: NPS/eNPS, drivers, segment significance tests, open-text themes, wave comparison and Van Westendorp pricing, with anonymity guardrails always on."
+    }
+  ]
+}

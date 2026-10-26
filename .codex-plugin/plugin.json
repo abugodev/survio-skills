@@ -1,0 +1,28 @@
+{
+  "name": "survio-insights",
+  "version": "0.1.0",
+  "description": "Analyze Survio survey results like a senior survey analyst: NPS/eNPS, drivers, segment significance tests, open-text themes, wave comparison and Van Westendorp pricing, with anonymity guardrails always on. Requires the Survio MCP server.",
+  "author": {
+    "name": "Abugo",
+    "email": "boris@reservio.com",
+    "url": "https://github.com/abugodev"
+  },
+  "homepage": "https://github.com/abugodev/survio-skills",
+  "repository": "https://github.com/abugodev/survio-skills",
+  "license": "MIT",
+  "keywords": ["survio", "surveys", "nps", "survey-analysis", "voice-of-customer"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Survio Insights",
+    "shortDescription": "Survey reports with reproducible numbers and anonymity guardrails",
+    "longDescription": "Reads Survio survey responses through the Survio MCP server (read tools only), profiles and cleans the data, runs the right statistics with a bundled dependency-free script, and writes a report that never exposes an individual respondent.",
+    "developerName": "Abugo",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "What does my latest Survio survey say?",
+      "Compare NPS between the two onboarding waves in Survio."
+    ],
+    "websiteURL": "https://github.com/abugodev/survio-skills"
+  }
+}

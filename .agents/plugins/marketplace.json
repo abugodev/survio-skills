@@ -1,0 +1,20 @@
+{
+  "name": "survio-skills",
+  "interface": {
+    "displayName": "Survio Skills"
+  },
+  "plugins": [
+    {
+      "name": "survio-insights",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
