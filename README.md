@@ -6,10 +6,13 @@ reproducible**, and **never exposing an individual respondent**.
 
 The skills use the open [Agent Skills](https://agentskills.io) format: a `SKILL.md` folder
 with a dependency-free Python script. They run in any harness that loads skills:
+
 - **Claude Code** and **Codex**, as a plugin;
 - **Gemini CLI**, as an extension;
 - **pi**, as a package;
 - any other agent, by copying the `skills/` folder.
+
+## Contents
 
 - [The problem](#the-problem)
 - [How it works](#how-it-works)
