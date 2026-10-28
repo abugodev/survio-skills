@@ -11,10 +11,28 @@ loads `SKILL.md` folders: Claude Code, Codex, pi, Gemini CLI and others.
 |---|---|
 | `skills/<skill>/SKILL.md` | The skills: YAML front matter (`name`, `description`), then instructions. Optional `scripts/` and `references/`. |
 | `skills/survey-analyst/` | Survey analysis: workflow, decision table, report contract, guardrails. `scripts/analyze.py` computes every number; `references/` hold the method notes. |
+| `skills/survio-cli/` | How to use the optional `survio` CLI (REST API): setup, route check, commands, filters, write switch. |
+| `cli/` | The `survio` CLI itself (Python package, standard library only). |
 | `.claude-plugin/` | Claude Code plugin and marketplace manifests. |
 | `.codex-plugin/`, `.agents/plugins/marketplace.json` | Codex plugin manifest and marketplace. |
 | `gemini-extension.json` | Gemini CLI extension manifest. |
 | `package.json` | pi package manifest (`pi.skills`). |
+
+## Install the CLI (optional)
+
+Without it, the skills read Survio through the MCP. With it, responses can be fetched
+straight to disk over the REST API, so answers do not pass through the model. The user
+installs it and stores an API token (Survio support issues tokens):
+
+```bash
+uv tool install "git+https://github.com/abugodev/survio-skills#subdirectory=cli"
+survio auth setup
+```
+
+`pipx install` with the same URL works too. The route is chosen by `SURVIO_ROUTE`
+(`auto`, `cli`, `mcp`); see `skills/survio-cli/SKILL.md`. Never read, print or edit the
+CLI's config file, and never set `SURVIO_API_TOKEN` or `SURVIO_ALLOW_WRITES` yourself.
+Every token has full access to the account.
 
 ## Using the skills
 
@@ -52,9 +70,11 @@ documents, Survio invitations) unless the user asks and names the destination.
 - Keep skill text harness-neutral. Describe actions ("fetch", "read", "write a file"),
   not one harness's tool names. When a step really differs per harness, say so
   explicitly for each harness.
-- Keep scripts dependency-free (Python 3 standard library, 3.9+).
+- Keep scripts and `cli/` dependency-free (Python 3 standard library; `cli/` stays
+  Python 3.9-compatible).
 - Examples in skills and code comments must be fictional and neutral. Never paste real
   respondent data, real company names or survey answers.
 - When you change the plugin version, bump it in every manifest:
   `.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`,
-  `.codex-plugin/plugin.json`, `gemini-extension.json` and `package.json`.
+  `.codex-plugin/plugin.json`, `gemini-extension.json`, `package.json`,
+  `cli/pyproject.toml` and `__version__` in `cli/survio_cli/__init__.py`.

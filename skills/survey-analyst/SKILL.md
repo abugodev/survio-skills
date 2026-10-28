@@ -1,6 +1,6 @@
 ---
 name: survey-analyst
-description: Analyze Survio survey results like a senior survey analyst — pull responses via the Survio MCP, profile and clean the data, choose the right methods (NPS/eNPS, drivers, segment significance tests, open-text theme coding, wave comparison, Van Westendorp pricing), and write a report with anonymity guardrails always on. Use this whenever someone asks what a survey says, wants results, insights, a summary, NPS/eNPS, "what do people complain about", themes from comments, a comparison between teams/segments/waves, pricing research results, or a data-quality check — for any Survio survey, in any language (Czech, Slovak, English, German…), even if they just say "what does the data say?" or "shrň mi výsledky průzkumu". Not for creating or editing surveys, sending invitations or reminders, or exporting responses without analysis.
+description: Analyze Survio survey results like a senior survey analyst — pull responses via the Survio MCP or the optional survio CLI, profile and clean the data, choose the right methods (NPS/eNPS, drivers, segment significance tests, open-text theme coding, wave comparison, Van Westendorp pricing), and write a report with anonymity guardrails always on. Use this whenever someone asks what a survey says, wants results, insights, a summary, NPS/eNPS, "what do people complain about", themes from comments, a comparison between teams/segments/waves, pricing research results, or a data-quality check — for any Survio survey, in any language (Czech, Slovak, English, German…), even if they just say "what does the data say?" or "shrň mi výsledky průzkumu". Not for creating or editing surveys, sending invitations or reminders, or exporting responses without analysis.
 ---
 
 # Survey analyst
@@ -18,12 +18,24 @@ script also enforces the small-group rules, so routing everything through it kee
 Paths (`scripts/`, `references/`) are relative to this skill's folder. Tool names are the Survio
 MCP's own; your harness may show them with a server prefix (in Claude Code, e.g.
 `mcp__survio__survio_list_surveys`). Only the two read tools named here are needed — never send
-invitations unless the user asks for exactly that.
+invitations unless the user asks for exactly that. On the CLI route, use only the three `survio`
+commands named here (`survio auth check` and the two read commands).
 
-1. **Find the survey.** `survio_list_surveys` → pick the survey the user means. If several could
+0. **Choose the route.** Check the `SURVIO_ROUTE` environment variable:
+   - `mcp` → MCP route.
+   - `cli` → CLI route; if `survio auth check` fails, stop and tell the user the CLI is not set
+     up or its token is rejected (see the survio-cli skill), and don't fall back silently.
+   - `auto` or unset → run `survio auth check`: exit 0 → CLI route; exit 2 or `survio` not
+     found → MCP route; exit 1 → tell the user the error, then MCP route.
+   - `mcp` and `cli` match in any case; any other value is treated as `auto`.
+   Never read, print or edit the CLI's config file, and never set its variables yourself.
+   Only steps 1–2 differ by route; steps 3–7 are the same.
+1. **Find the survey.** MCP route: `survio_list_surveys` → pick the survey the user means. If several could
    match (e.g. two waves, similar titles), ask or state which one you used. Two surveys with the
    same questionnaire and different dates/titles ("Wave 1/2", "Q1/Q3", "2025/2026") are waves.
-2. **Pull all responses.** `survio_list_survey_responses(surveyId, page=N)` until `hasMore` is
+   CLI route: `survio surveys list --page-all --page-limit 0` (every page, one JSON line per page;
+   without `--page-limit 0` it stops after 10 pages) → pick the same way.
+2. **Pull all responses.** MCP route: `survio_list_survey_responses(surveyId, page=N)` until `hasMore` is
    false. Write each page as `survey_data/<surveyId>/page_<N>.tsv` (header + its rows) — a compact
    table `analyze.py` reads directly (raw JSON is ~5× longer to re-type and easy to truncate):
    - header: `responseId`, `submitted`, then one `[TYPE] question` per question, with TYPE = the
@@ -31,8 +43,36 @@ invitations unless the user asks for exactly that.
      `[MATRIX] question :: row label`. Copy question texts exactly; same header on every page.
    - one line per response, tab-separated; empty cell = no answer; MULTI values joined with ` | `;
      text copied exactly (typos, emoji, other languages), only tabs/newlines replaced by spaces.
+   - column type and cell for every answer `type` (SINGLE_CHOICE → CHOICE, MULTIPLE_CHOICE →
+     MULTI, MATRIX_SINGLE_CHOICE → MATRIX per row, NPS/RATING/NUMBER/TEXT as named), plus:
+
+     | Type | Column(s) | Cell |
+     |---|---|---|
+     | SINGLE_CHOICE, IMAGE_SINGLE_CHOICE | `[CHOICE] q` | label; "Other" → `Other: <text>` |
+     | MULTIPLE_CHOICE, IMAGE_MULTIPLE_CHOICE | `[MULTI] q` | labels joined ` \| `; "Other" text as one more item `Other: <text>` |
+     | DATE, PLACE | `[TEXT] q` | as given |
+     | EMOJI | `[RATING] q` | the integer (1 = first smiley shown) |
+     | SORTING | `[MATRIX] q :: <item>` per item | rank position, 1 = top |
+     | SEMANTIC_DIFFERENTIAL | `[MATRIX] q :: <left> – <right>` per row (en dash, spaces) | the number |
+     | DIVIDE_POINTS | `[MATRIX] q :: <item>` per item | the points |
+     | MATRIX_MULTIPLE_CHOICE | `[MULTI] q :: <row>` per row | column labels joined ` \| ` |
+     | MATRIX_TEXT | `[TEXT] q :: <row> :: <col>` per row × column | the text |
+     | EMAIL | no column | — |
+
+     SORTING, SEMANTIC_DIFFERENTIAL and DIVIDE_POINTS columns are ranks, -2…2 positions and
+     points, not ratings; EMOJI 1 is the first smiley shown (usually the most positive).
+   - columns in questionnaire order = the order answers come in; a question first seen in a
+     later response goes right after the question before it in that response. Rows of matrix,
+     sorting, semantic-differential and divide-points questions in first-seen order; ` :: `
+     inside such a question's label becomes ` : `. A question label that repeats an earlier
+     one gets ` (2)`, ` (3)`, … appended.
    Then check completeness: the row count must equal the sum of each page's `count`. If it
    doesn't, find and fix the gap before analysing — a partial dataset gives confidently wrong numbers.
+   CLI route: `survio responses +fetch <id> --ws survey_data/<id>` writes the same TSV files
+   (don't retype them) and `survey_data/<id>/.survio/manifest.json`. Analyse only when the
+   manifest has `"complete": true`; its `counts.responses` is the response count, so `n` in
+   step 3 must equal it. If `complete` is false, re-run `+fetch` — never analyse a partial
+   folder. Types listed in the manifest's `unmapped_types` are written as TEXT; look at them first.
 3. **Profile.** `python3 scripts/analyze.py profile --data survey_data/<id>` → n, question keys
    (Q1, Q2, Q3.1 for matrix rows…), types, answer rates, segment sizes, groups with n<5.
 4. **Check quality.** `analyze.py quality --data …` → straight-liners, duplicates, gibberish,

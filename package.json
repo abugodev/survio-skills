@@ -1,7 +1,7 @@
 {
   "name": "survio-insights",
-  "version": "0.1.0",
-  "description": "Agent skills for Survio: survey reports with reproducible numbers and anonymity guardrails",
+  "version": "0.2.0",
+  "description": "Agent skills for Survio: survey reports with reproducible numbers and anonymity guardrails, via the Survio MCP or the optional survio CLI",
   "license": "MIT",
   "repository": "github:abugodev/survio-skills",
   "keywords": ["pi-package", "skills", "survio", "surveys"],

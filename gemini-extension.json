@@ -1,5 +1,5 @@
 {
   "name": "survio-insights",
-  "version": "0.1.0",
-  "description": "Analyze Survio survey results like a senior survey analyst: NPS/eNPS, drivers, segment significance tests, open-text themes, wave comparison and Van Westendorp pricing, with anonymity guardrails always on. Requires the Survio MCP server."
+  "version": "0.2.0",
+  "description": "Analyze Survio survey results like a senior survey analyst: NPS/eNPS, drivers, segment significance tests, open-text themes, wave comparison and Van Westendorp pricing, with anonymity guardrails always on. Reads Survio through the Survio MCP server or the optional survio CLI (REST API)."
 }

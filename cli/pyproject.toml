@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "survio-cli"
+version = "0.2.0"
+description = "Command-line client for the Survio REST API"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+survio = "survio_cli.__main__:main"
+
+[tool.setuptools]
+packages = ["survio_cli", "survio_cli.commands", "survio_cli.helpers"]

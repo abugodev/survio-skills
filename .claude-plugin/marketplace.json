@@ -1,6 +1,6 @@
 {
   "name": "survio-skills",
-  "owner": { "name": "Abugo", "email": "boris@reservio.com" },
+  "owner": { "name": "Abugo", "email": "support@survio.com" },
   "metadata": {
     "description": "Agent skills for Survio: analyze survey results with reproducible numbers and anonymity guardrails"
   },
@@ -8,8 +8,8 @@
     {
       "name": "survio-insights",
       "source": "./",
-      "version": "0.1.0",
-      "description": "Analyze Survio survey results like a senior survey analyst: NPS/eNPS, drivers, segment significance tests, open-text themes, wave comparison and Van Westendorp pricing, with anonymity guardrails always on."
+      "version": "0.2.0",
+      "description": "Analyze Survio survey results like a senior survey analyst: NPS/eNPS, drivers, segment significance tests, open-text themes, wave comparison and Van Westendorp pricing, with anonymity guardrails always on. Reads Survio through the Survio MCP server or the optional survio CLI."
     }
   ]
 }

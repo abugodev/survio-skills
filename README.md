@@ -19,6 +19,7 @@ with a dependency-free Python script. They run in any harness that loads skills:
   - [Gemini CLI](#gemini-cli)
   - [pi](#pi)
   - [Other harnesses](#other-harnesses)
+  - [Install the CLI (optional)](#install-the-cli-optional)
 - [The skills](#the-skills)
 - [Privacy](#privacy)
 - [Repository layout](#repository-layout)
@@ -63,14 +64,18 @@ survio_list_survey_responses  analyze.py profile / quality        key findings Â
    or identifying details.
 
 The script (`analyze.py`) uses only the Python 3 standard library. Nothing is installed and
-nothing leaves your machine except the MCP calls your assistant makes.
+nothing leaves your machine except the calls that read your survey: the MCP calls your
+assistant makes or, with the optional CLI, the CLI's requests to Survio's REST API.
 
 ## Install
 
 Every harness needs:
-- **The Survio MCP server** (`https://ai.survio.com/mcp`), connected and signed in to your
-  Survio account. Survio MCP is available on PRO Business and higher. Sign-in uses OAuth,
-  so there is no API key.
+- **Access to your Survio account**, through either
+  - **the Survio MCP server** (`https://ai.survio.com/mcp`), connected and signed in to your
+    Survio account. Survio MCP is available on PRO Business and higher. Sign-in uses OAuth,
+    so there is no API key; or
+  - **the optional `survio` CLI**, set up with a Survio API token (see
+    [Install the CLI](#install-the-cli-optional)).
 - **Python 3.9+**, for the bundled script.
 
 Installation differs by harness. If you use more than one, install separately for each.
@@ -164,6 +169,28 @@ If your agent has no skill loader, point it at `AGENTS.md` and
 
 In Codex you can also mention the skill with `$`, e.g. `$survey-analyst`.
 
+### Install the CLI (optional)
+
+The skills use the Survio MCP, or the optional `survio` CLI when it is installed and set up.
+The CLI talks to the Survio REST API instead: it lists surveys, filters responses by source,
+language, submission date and completion time, and downloads a survey's responses straight
+to disk, so the answers don't pass through your AI assistant. It needs Python 3.9+ and no other
+dependencies.
+
+```bash
+uv tool install "git+https://github.com/abugodev/survio-skills#subdirectory=cli"
+# or
+pipx install "git+https://github.com/abugodev/survio-skills#subdirectory=cli"
+
+survio auth setup     # run in your own terminal; asks for the token
+survio auth check
+```
+
+API tokens come from Survio support (support@survio.com); every token has full access to
+your account. Sending invitations is blocked unless you turn writes on yourself in the
+CLI's config file. See [cli/README.md](cli/README.md) and
+[skills/survio-cli/SKILL.md](skills/survio-cli/SKILL.md).
+
 ## The skills
 
 All examples below are fictional.
@@ -181,7 +208,7 @@ teams, segments or waves, pricing research results, or a data-quality check.
 responses without analysis.
 
 **Input:** a Survio survey (or two waves of the same questionnaire), read through the
-Survio MCP.
+Survio MCP or the optional `survio` CLI.
 
 **Output:** `report.md` in the user's language, with five sections: key findings, sample
 and data quality, segment differences, themes, caveats. The working data stays in
@@ -217,6 +244,16 @@ What `analyze.py` does:
 match). Margin of error for NPS: Â±9 points.
 ```
 
+### survio-cli
+
+**Purpose:** reference for the optional `survio` CLI: setup, the route check other skills
+use to pick the CLI or the MCP, every command, response filters, `responses +fetch`, exit
+codes and the write switch.
+
+**Use when:** someone mentions the Survio API or the survio CLI, wants to filter responses
+by source, language or date, download responses to disk, or send an invitation from the
+command line.
+
 ## Privacy
 
 Anonymity rules apply to every survey, not only HR ones:
@@ -243,6 +280,8 @@ Automated checks can miss things, so review a report before you share it.
 | Path | What |
 |---|---|
 | `skills/` | The skills (`SKILL.md` + `scripts/` + `references/`) |
+| `cli/` | The optional `survio` CLI (Python, standard library only) |
+| `.env.example` | The CLI's variable names |
 | `AGENTS.md` | Instructions for agents using or maintaining the skills |
 | `.claude-plugin/` | Claude Code plugin + marketplace manifests |
 | `.codex-plugin/`, `.agents/plugins/marketplace.json` | Codex plugin manifest + marketplace |
